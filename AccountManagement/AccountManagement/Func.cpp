@@ -45,17 +45,53 @@ int Account::ReturnKind()
 
 void Account::nDeposit(int money, int interRate)
 {
-	balance = balance + money + (money / 100 * interRate);
+	try
+	{
+		if(money<0)
+			throw money;
+		balance = balance + money + (money / 100 * interRate);
+	}
+
+	catch (int expn)
+	{
+		cout << "잘못된 금액 입력 : " << expn << endl;
+	}
 }
 
 void Account::cDeposit(int money, int specialRate)
 {
-	balance = balance + money + (money / 100 * ReturnInterRate()) + (money / 100 * specialRate);
+	try
+	{
+		if (money < 0)
+			throw money;
+		balance = balance + money + (money / 100 * ReturnInterRate()) + (money / 100 * specialRate);
+	}
+
+	catch (int expn)
+	{
+		cout << "잘못된 금액 입력 : " << expn << endl;
+	}
 }
 
 void Account::Withdraw(int money)
 {
-	balance = balance - money;
+	try
+	{
+		if(money < 0)
+			throw money;
+		else if(money > balance)
+			throw balance;
+		balance = balance - money;
+	}
+
+	catch (int expn)
+	{
+		if (expn < 0)
+			cout << "잘못된 금액 입력 : " << expn << endl;
+		else
+			cout << "잔액 : " << expn << " , 잔액이 부족합니다." << endl;
+	}
+
 }
 
 void Account::ShowAccount() const
@@ -113,7 +149,26 @@ void HighCreditAccount::HighCreditDeposit(int money)
 	cDeposit(money, specialRate);
 }
 
-//AccountHandler함수
+
+//BoundCheckPointArray 클래스 함수
+void BoundCheckPointArray::AddAccount(Account *account, int num)
+{
+	accountArry[num] = account;
+}
+Account* BoundCheckPointArray::ReturnAccount(int num)
+{
+	return accountArry[num];
+}
+
+void BoundCheckPointArray::ShowArry(int num) const
+{
+	for (int i = 0; i < num; i++)
+	{
+		accountArry[i]->ShowAccount();
+	}
+}
+
+//AccountHandler 클래스 함수
 AccountHandler::AccountHandler() : accountNum(0)
 {}
 
@@ -123,7 +178,8 @@ AccountHandler::AccountHandler(const AccountHandler &copy)
 
 void AccountHandler::AddAccount(Account *account)
 {
-	accountList[accountNum] = account;
+	//accountList[accountNum] = account;
+	accountList.AddAccount(account, accountNum);
 	accountNum++;
 }
 
@@ -132,16 +188,16 @@ void AccountHandler::HandlerDeposit(int ID, int money)
 	int i = 0;
 	while (1)
 	{
-		if (accountList[i]->IDCompare(ID) == 1)
+		if (accountList.ReturnAccount(i)->IDCompare(ID) == 1)
 		{
-			if (accountList[i]->ReturnKind() == 1)
+			if (accountList.ReturnAccount(i)->ReturnKind() == 1)
 			{
-				accountList[i]->NormalDeposit(money);
+				accountList.ReturnAccount(i)->NormalDeposit(money);
 				break;
 			}
-			else if (accountList[i]->ReturnKind() == 2)
+			else if (accountList.ReturnAccount(i)->ReturnKind() == 2)
 			{
-				accountList[i]->HighCreditDeposit(money);
+				accountList.ReturnAccount(i)->HighCreditDeposit(money);
 				break;
 			}
 		}
@@ -156,9 +212,9 @@ void AccountHandler::HandlerWithdraw(int ID, int money)
 	int i = 0;
 	while (1)
 	{
-		if (accountList[i]->IDCompare(ID) == 1)
+		if (accountList.ReturnAccount(i)->IDCompare(ID) == 1)
 		{
-			accountList[i]->Withdraw(money);
+			accountList.ReturnAccount(i)->Withdraw(money);
 			break;
 		}
 		else if (i > accountNum)
@@ -167,13 +223,13 @@ void AccountHandler::HandlerWithdraw(int ID, int money)
 	}
 }
 
+
 void AccountHandler::ShowAllAccountInfo() const
 {
-	for (int i = 0; i < accountNum; i++)
-	{
-		accountList[i]->ShowAccount();
-	}
+	accountList.ShowArry(accountNum);
 }
+
+
 
 
 //계좌개설 함수
@@ -239,12 +295,13 @@ void DepositFunc(AccountHandler *account)
 
 }
 
-//출금 힘수
+//출금 함수
 void WithdrawFunc(AccountHandler *account)
 {
 	int i = 0;
 	int out = 0;
 	int outID;
+
 	cout << "[출금]" << endl;
 	cout << "계좌ID : ";
 	cin >> outID;

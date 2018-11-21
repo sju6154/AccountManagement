@@ -71,11 +71,29 @@ public:
 	void HighCreditDeposit(int money);
 };
 
+//BoundCheckPointArray 클래스(계좌저장)
+class BoundCheckPointArray
+{
+private:
+	Account *accountArry[100];
+public:
+	BoundCheckPointArray()
+	{}
+
+	void AddAccount(Account *account, int num);
+
+	Account* ReturnAccount(int num);
+
+	void ShowArry(int num) const;
+};
+
+
+
 //Handler 클래스
 class AccountHandler
 {
 private:
-	Account * accountList[100];
+	BoundCheckPointArray accountList;
 	int accountNum;
 public:
 	AccountHandler();
@@ -90,5 +108,6 @@ public:
 
 	void ShowAllAccountInfo() const;
 };
+
 
 #endif
