@@ -148,7 +148,7 @@ void BoundCheckPointArray::ShowArry(int num) const
 BoundCheckPointArray::~BoundCheckPointArray()
 {
 		delete[]accountArry;
-			cout << "accountArry ¼Ò¸ê" << endl;
+		cout << "accountArry ¼Ò¸ê" << endl;
 }
 
 //AccountHandler Å¬·¡½º ÇÔ¼ö
