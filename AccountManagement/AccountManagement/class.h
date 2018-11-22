@@ -42,10 +42,10 @@ public:
 class NormalAccount : public Account
 {
 private:
-	int interRate = 1;   		// 입금시 발생하는 이자율 %단위
+	int interRate;   		// 입금시 발생하는 이자율 %단위
 	int kind;
 public:
-	NormalAccount(const int k, const int userID, int userBalance, const char *userName);
+	NormalAccount(const int k,int rating, const int userID, int userBalance, const char *userName);
 
 	NormalAccount(const NormalAccount &copy);
 
@@ -77,16 +77,17 @@ public:
 class BoundCheckPointArray
 {
 private:
-	Account *accountArry[100];
+	Account **accountArry;
 public:
-	BoundCheckPointArray()
-	{}
+	BoundCheckPointArray();
 
-	void AddAccount(Account *account, int num);
+	void AddAccount(int kind, int rating, int ID, int balance, char *nameptr, int num);
 
 	Account* ReturnAccount(int num);
 
 	void ShowArry(int num) const;
+
+	~BoundCheckPointArray();
 };
 
 
@@ -94,14 +95,14 @@ public:
 class AccountHandler
 {
 private:
+	int accountNum = 0;
 	BoundCheckPointArray accountList;
-	int accountNum;
 public:
 	AccountHandler();
 
 	AccountHandler(const AccountHandler &copy);
 
-	void AddAccount(Account *account);
+	void AddAccount(int kind, int rating, int ID, int balance, char *nameptr);
 
 	void HandlerDeposit(int ID, int money);
 

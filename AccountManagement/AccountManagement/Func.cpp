@@ -77,8 +77,8 @@ Account::~Account()
 }
 
 //NormalAccount함수
-NormalAccount::NormalAccount(const int k, const int userID, int userBalance, const char *userName)
-	: Account(userID, userBalance, userName), kind(k)
+NormalAccount::NormalAccount(const int k, int rating, const int userID, int userBalance, const char *userName)
+	: Account(userID, userBalance, userName), kind(k), interRate(rating)
 {}
 
 NormalAccount::NormalAccount(const NormalAccount &copy)
@@ -104,7 +104,7 @@ void NormalAccount::NormalDeposit(int money)
 
 //HighCreditAccount함수
 HighCreditAccount::HighCreditAccount(const int k, const int rating, const int userID, int userBalance, const char *userName)
-	: NormalAccount(k, userID, userBalance, userName), specialRate(rating)
+	: NormalAccount(k, rating, userID, userBalance, userName), specialRate(rating)
 {}
 
 HighCreditAccount::HighCreditAccount(const HighCreditAccount &copy)
@@ -120,9 +120,17 @@ void HighCreditAccount::HighCreditDeposit(int money)
 
 
 //BoundCheckPointArray 클래스 함수
-void BoundCheckPointArray::AddAccount(Account *account, int num)
+BoundCheckPointArray::BoundCheckPointArray()
 {
-	accountArry[num] = account;
+	accountArry = new Account*[100];
+}
+
+void BoundCheckPointArray::AddAccount(int kind, int rating, int ID, int balance, char *nameptr, int num)
+{
+	if (kind == NORMAL)
+		accountArry[num] = new NormalAccount(kind, rating, ID, balance, nameptr);
+	else if(kind == CREDIT)
+		accountArry[num] = new HighCreditAccount(kind, rating, ID, balance, nameptr);
 }
 Account* BoundCheckPointArray::ReturnAccount(int num)
 {
@@ -137,6 +145,12 @@ void BoundCheckPointArray::ShowArry(int num) const
 	}
 }
 
+BoundCheckPointArray::~BoundCheckPointArray()
+{
+		delete[]accountArry;
+			cout << "accountArry 소멸" << endl;
+}
+
 //AccountHandler 클래스 함수
 AccountHandler::AccountHandler() : accountNum(0)
 {}
@@ -145,10 +159,9 @@ AccountHandler::AccountHandler(const AccountHandler &copy)
 	: accountNum(copy.accountNum)
 {}
 
-void AccountHandler::AddAccount(Account *account)
+void AccountHandler::AddAccount(int kind, int rating, int ID, int balance, char *nameptr)
 {
-	//accountList[accountNum] = account;
-	accountList.AddAccount(account, accountNum);
+	accountList.AddAccount(kind, rating, ID, balance, nameptr, accountNum);
 	accountNum++;
 }
 
@@ -206,14 +219,10 @@ void AccountHandler::HandlerWithdraw(int ID, int money)
 	}
 }
 
-
-
-
 void AccountHandler::ShowAllAccountInfo() const
 {
 	accountList.ShowArry(accountNum);
 }
-
 
 // -예외 클래스 함수
 int NegativeException::NeException()
@@ -281,17 +290,22 @@ void MakeAccountFunc(AccountHandler *account)
 	strcpy(nameptr, name);
 
 	if (kind == 'N')
-		account->AddAccount(new NormalAccount(NORMAL, ID, balance, nameptr));
+	{
+		rating = 0;
+		account->AddAccount(NORMAL, rating, ID, balance, nameptr);
+	}
 	else if (kind == 'C')
 	{
 		if (crating == 'A') rating = LEVEL_A;
 		else if (crating == 'B')rating = LEVEL_B;
 		else if (crating == 'C')rating = LEVEL_C;
 
-		account->AddAccount(new HighCreditAccount(CREDIT, rating, ID, balance, nameptr));
+		account->AddAccount(CREDIT, rating, ID, balance, nameptr);
 	}
 	delete nameptr;
+	cout << "delete nameptr" << endl;
 }
+
 
 //입금 함수
 void DepositFunc(AccountHandler *account)
