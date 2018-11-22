@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cstring>
 #include"class.h"
+
 using namespace std;
 
 // 신용등급

@@ -45,53 +45,22 @@ int Account::ReturnKind()
 
 void Account::nDeposit(int money, int interRate)
 {
-	try
-	{
-		if(money<0)
-			throw money;
-		balance = balance + money + (money / 100 * interRate);
-	}
-
-	catch (int expn)
-	{
-		cout << "잘못된 금액 입력 : " << expn << endl;
-	}
+	balance = balance + money + (money / 100 * interRate);
 }
 
 void Account::cDeposit(int money, int specialRate)
 {
-	try
-	{
-		if (money < 0)
-			throw money;
-		balance = balance + money + (money / 100 * ReturnInterRate()) + (money / 100 * specialRate);
-	}
-
-	catch (int expn)
-	{
-		cout << "잘못된 금액 입력 : " << expn << endl;
-	}
+	balance = balance + money + (money / 100 * ReturnInterRate()) + (money / 100 * specialRate);
 }
 
 void Account::Withdraw(int money)
+{	
+	balance = balance - money;	
+}
+
+int Account::ReturnBalance()
 {
-	try
-	{
-		if(money < 0)
-			throw money;
-		else if(money > balance)
-			throw balance;
-		balance = balance - money;
-	}
-
-	catch (int expn)
-	{
-		if (expn < 0)
-			cout << "잘못된 금액 입력 : " << expn << endl;
-		else
-			cout << "잔액 : " << expn << " , 잔액이 부족합니다." << endl;
-	}
-
+	return balance;
 }
 
 void Account::ShowAccount() const
@@ -210,12 +179,26 @@ void AccountHandler::HandlerDeposit(int ID, int money)
 void AccountHandler::HandlerWithdraw(int ID, int money)
 {
 	int i = 0;
+	int withdrawID=ID;
+	int withdrawMoney=money;
+
 	while (1)
 	{
 		if (accountList.ReturnAccount(i)->IDCompare(ID) == 1)
 		{
-			accountList.ReturnAccount(i)->Withdraw(money);
-			break;
+			ExcessException ee(withdrawMoney, accountList.ReturnAccount(i)->ReturnBalance());
+			if (ee.ExException() == 1)
+			{
+				accountList.ReturnAccount(i)->Withdraw(money);
+				break;
+			}
+			else
+			{
+				cout << "출금액을 다시 입력 하세요." << endl;
+				cin >> withdrawMoney;
+				HandlerWithdraw(withdrawID, withdrawMoney);
+				break;
+			}
 		}
 		else if (i > accountNum)
 			break;
@@ -224,11 +207,44 @@ void AccountHandler::HandlerWithdraw(int ID, int money)
 }
 
 
+
+
 void AccountHandler::ShowAllAccountInfo() const
 {
 	accountList.ShowArry(accountNum);
 }
 
+
+// -예외 클래스 함수
+int NegativeException::NeException()
+{
+	try
+	{
+		if (money < 0)
+			throw money;
+		return 1;
+	}
+	catch (int expn)
+	{
+		cout << "잘못된 값(" << expn << ")을 입력 했습니다." << endl;
+	}
+}
+
+
+// 초과예외 클래스 함수
+int ExcessException::ExException()
+{
+	try
+	{
+		if (money > balance)
+			throw balance;
+		return 1;
+	}
+	catch (int expn)
+	{
+		cout << "잔액("<< expn <<")이 부족합니다." << endl;
+	}
+}
 
 
 
@@ -291,8 +307,14 @@ void DepositFunc(AccountHandler *account)
 	cin >> in;
 	cout << in << endl;
 
-	account->HandlerDeposit(inID, in);
-
+	NegativeException ne(in);
+	if(ne.NeException()==1)
+		account->HandlerDeposit(inID, in);
+	else
+	{
+		cout << "다시 입력 하세요." << endl;
+		DepositFunc(account);
+	}
 }
 
 //출금 함수
@@ -310,5 +332,13 @@ void WithdrawFunc(AccountHandler *account)
 	cin >> out;
 	cout << out << endl;
 
-	account->HandlerWithdraw(outID, out);
+	NegativeException ne(out);
+	if (ne.NeException() == 1)
+		account->HandlerWithdraw(outID, out);		
+	else
+	{
+		cout << "다시 입력 하세요." << endl;
+		WithdrawFunc(account);
+	}
 }
+

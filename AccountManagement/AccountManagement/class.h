@@ -31,6 +31,8 @@ public:
 
 	void Withdraw(int money);
 
+	int ReturnBalance();
+
 	void ShowAccount() const;
 
 	~Account();
@@ -88,7 +90,6 @@ public:
 };
 
 
-
 //Handler 클래스
 class AccountHandler
 {
@@ -107,6 +108,33 @@ public:
 	void HandlerWithdraw(int ID, int money);
 
 	void ShowAllAccountInfo() const;
+};
+
+//입력금액이 -인경우 클래스
+class NegativeException
+{
+private:
+	int money;
+public:
+	NegativeException(int n)
+		: money(n)
+	{}
+
+	int NeException();
+};
+
+//출력금액이 잔액보다 큰 경우 클래스
+class ExcessException
+{
+private:
+	int money;
+	int balance;
+public:
+	ExcessException(int n,int b)
+		: money(n), balance(b)
+	{}
+
+	int ExException();
 };
 
 
